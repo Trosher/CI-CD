@@ -1,0 +1,58 @@
+stages:
+  - build
+  - style
+  - test
+  - deploy
+
+building:
+  stage: build
+  tags: 
+    - build
+  script:
+    - cd src/cat
+    - make s21_cat
+    - cd ../grep
+    - make s21_grep
+  artifacts:
+    paths:
+      - src/cat/s21_cat
+      - src/grep/s21_grep
+    expire_in: 30 days
+  after_script:
+    - sh src/notify.sh "test"
+
+codestyle:
+  stage: style
+  tags: 
+    - style
+  script:
+    - cd src/cat
+    - make style
+    - cd ../grep
+    - make style
+  when: always
+  after_script:
+    - sh src/notify.sh "test"
+
+test_code:
+  stage: test
+  tags:
+    - test
+  script:
+    - cd src/cat
+    - make test 
+    - cd ../grep
+    - make test
+  when: on_success
+  after_script:
+    - sh src/notify.sh "test"
+
+deploy:
+  stage: deploy
+  tags:
+    - deploy
+  script:
+    - bash src/copy.sh
+  when: manual
+  after_script:
+    - sh src/notify.sh "test"
